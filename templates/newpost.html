@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add a Blog Entry</h1>
+    <form method='post'>
+        <label>
+            Blog Title:
+            <input type="text" name='title' />
+        </label>
+        <label>
+            Blog Content:
+            <input type="text" name='body' />
+        </label>
+        <input type="submit" value='Add Blog' />
+    </form>
+
+    <hr />
+
+    {% if blogs|length == 0 %}
+    <p>No blogs yet</p>
+    {% else %}
+
+    <h2>Blog Entries</h2>
+
+    <ul>
+        {% for blog in completed_blogs %}
+        <li>{{blog.name}}</li>
+        {% endfor %}
+    </ul>
+
+       
+
+    {% endif %}
+
+    <hr />
+
+  
+{% endblock %}
