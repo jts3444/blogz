@@ -16,23 +16,7 @@
 
     <hr />
 
-    {% if blogs|length == 0 %}
-    <p>No blogs yet</p>
-    {% else %}
-
-    <h2>Blog Entries</h2>
-
-    <ul>
-        {% for blog in completed_blogs %}
-        <li>{{blog.name}}</li>
-        {% endfor %}
-    </ul>
-
-       
-
-    {% endif %}
-
-    <hr />
+    
 
   
 {% endblock %}

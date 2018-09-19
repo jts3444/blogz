@@ -1,11 +1,25 @@
 from flask import Flask, request, redirect, render_template
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy # Python ORM
+from sqlalchemy import create_engine, inspect
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:buildablog@localhost:8889/build-a-blog'
-app.config['SQLALCHEMY_ECHO'] = True
-db = SQLAlchemy(app)
+app.config["DEBUG"] = True  # set to True for Flask report on web server activity
+app.config["SQLALCHEMY_ECHO"] = False   # set True for MySQL report on database activity
+
+# put in your database credentials here
+username = "build-a-blog"
+password = "buildablog"
+host = "localhost"
+port = "8889"
+database = "build-a-blog"
+
+connection_string = f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
+
+app.config["SQLALCHEMY_DATABASE_URI"] = connection_string
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app) # uses the SQLAlchemy Database URI (connection string) to connect to the db
+db_session = db.session # used for interaction with the database
 
 class Blog(db.Model):
 
@@ -22,7 +36,19 @@ class Blog(db.Model):
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
+    return redirect('/blog')
 
+    
+@app.route('/blog')
+def b_display():
+    
+    blogs = Blog.query.filter_by(completed=False).all()
+    completed_tasks = Blog.query.filter_by(completed=True).all()
+    return render_template('blog.html',title="New Blog Post", 
+        blogs=blogs, completed_tasks=completed_tasks)
+
+@app.route('/newpost', methods=['POST', 'GET'])
+def newpost():
     if request.method == 'POST':
         title_name = request.form['title']
         body_text = request.form['body']
@@ -30,16 +56,18 @@ def index():
         db.session.add(new_post)
         db.session.commit()
 
-    blogs = Blog.query.filter_by(completed=False).all()
-    completed_tasks = Blog.query.filter_by(completed=True).all()
-    return render_template('blog.html',title="New Blog Post", 
-        blogs=blogs, completed_tasks=completed_tasks)
+    
+    return render_template('newpost.html')
 
-@app.route('/newpost')
-def newpost():
-    title = request.args.get('title')
-    body = request.args.get('body')
-    return render_template('blog.html', title = title, body = body)
+def main():
+    ENGINE = create_engine(connection_string)
+    INSPECTOR = inspect(ENGINE)  # used for checking if tables exist on startup
 
-if __name__ == '__main__':
+    tables = INSPECTOR.get_table_names()
+    if not tables:
+        db.create_all()
+
     app.run()
+      
+if __name__ == '__main__':
+    main()

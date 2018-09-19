@@ -1,7 +1,21 @@
 <!doctype html>
-<html>
-    <body>
-        <h1>{{title}}</h1>
-        <p>{{body}}</p>
-    </body>
-</html>
+
+# Display all blog posts
+
+{% if blogs|length == 0 %}
+    <p>No blogs yet</p>
+    {% else %}
+
+    <h2>Blog Entries</h2>
+
+    <ul>
+        {% for blog in completed_blogs %}
+        <li>{{blog.name}}</li>
+        {% endfor %}
+    </ul>
+
+       
+    {% endif %}
+
+    <hr />
+
