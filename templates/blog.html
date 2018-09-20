@@ -1,18 +1,19 @@
-<!doctype html>
+{% extends "base.html" %}
 
+{% block content %}
 {% if blogs|length == 0 %}
     <p>No blogs yet</p>
     {% else %}
 
-    <h2>Blog Entries</h2>
+    <h1>Blog Entries</h1>
 
     
-        {% for blog in completed_blogs %}
-        <h1><strong>{{blog.title}}</strong></h1>
+        {% for blog in blogs %}
+        <h2><strong>{{blog.title}}</strong></h2>
             <p>{{blog.body}}</p>
         {% endfor %}
     
     {% endif %}
-
+    {% endblock %}
     <hr />
 

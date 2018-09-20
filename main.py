@@ -26,7 +26,7 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(360))
-    completed = db.Column(db.Boolean)
+    
 
     def __init__(self, title, body):
         self.title = title
@@ -43,9 +43,8 @@ def index():
 def b_display():
     
     blogs = Blog.query.filter_by().all()
-    completed_blogs = Blog.query.filter_by(completed=False).all()
     return render_template('blog.html',title="New Blog Post", 
-        blogs=blogs, completed_blogs=completed_blogs)
+        blogs=blogs)
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def newpost():
@@ -55,8 +54,10 @@ def newpost():
         new_post = Blog(title_name, body_text)
         db.session.add(new_post)
         db.session.commit()
+        return redirect("blog")
 
-    return render_template('newpost.html', title="New Blog Entries")
+    return render_template('newpost.html')
+    
 
 def main():
     ENGINE = create_engine(connection_string)
