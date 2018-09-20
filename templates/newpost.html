@@ -1,22 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <style>.error {
+    color: red;
+    }
+    </style>
+    <center>
     <h1>Add a Blog Entry</h1>
+    </center>
     <form method='post'>
         <label>
             Blog Title:
+            <p></p>
             <input type="text" name='title' />
+            <span class="error">{{title_error}}</span> 
         </label>
+        <br></br>
         <label>
             Blog Content:
-            <input type="text" name='body' />
+            <br></br>
+            <input type="text" name='body' style="height:100px" />
+            <span class="error">{{text_error}}</span> 
         </label>
-        <input type="submit" value='Add Blog' onclick="redirect(blog)" />
+        <br></br>
+        <input type="submit" value='Add Blog' />
     </form>
 
     <hr />
 
     
-
-  
 {% endblock %}

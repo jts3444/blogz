@@ -31,8 +31,6 @@ class Blog(db.Model):
     def __init__(self, title, body):
         self.title = title
         self.body = body
-        
-
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -51,14 +49,28 @@ def newpost():
     if request.method == 'POST':
         title_name = request.form['title']
         body_text = request.form['body']
+        title_error = ''
+        text_error = ''
+        
+        if title_name == '':
+            title_error = "Please enter a title"
+        if body_text == '':
+            text_error = "Please enter content for your blog post"
+        
+        if title_error or text_error:
+            return render_template('newpost.html', title_error=title_error, text_error=text_error)
+
         new_post = Blog(title_name, body_text)
         db.session.add(new_post)
         db.session.commit()
-        return redirect("blog")
+
+        post_id = db.session.query(Blog.id).filter(Blog.title==title_name).first() #fail 1
+        new_id = request.args.get(Blog.id) # fail 2 
+        
+        return redirect("blog") # after user submits new post, redirects to blog page
 
     return render_template('newpost.html')
     
-
 def main():
     ENGINE = create_engine(connection_string)
     INSPECTOR = inspect(ENGINE)  # used for checking if tables exist on startup
