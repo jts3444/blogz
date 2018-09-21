@@ -6,7 +6,7 @@
     }
     </style>
     <center>
-    <h1>Add a Blog Entry</h1>
+    <h1>{{title}}</h1>
     </center>
     <form method='post'>
         <label>
@@ -19,7 +19,7 @@
         <label>
             Blog Content:
             <br></br>
-            <input type="text" name='body' style="height:100px" />
+            <textarea rows ="8" cols = "50" name='body'></textarea>
             <span class="error">{{text_error}}</span> 
         </label>
         <br></br>

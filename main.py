@@ -40,6 +40,13 @@ def index():
 @app.route('/blog')
 def b_display():
     
+    #handles blog display for one post
+    blog_id = request.args.get('id')
+    if (blog_id):
+        post = Blog.query.get(blog_id)
+        return render_template('blog_post.html', post = post)
+    
+    # handles display for all posts
     blogs = Blog.query.filter_by().all()
     return render_template('blog.html',title="New Blog Post", 
         blogs=blogs)
@@ -49,6 +56,7 @@ def newpost():
     if request.method == 'POST':
         title_name = request.form['title']
         body_text = request.form['body']
+
         title_error = ''
         text_error = ''
         
@@ -64,12 +72,12 @@ def newpost():
         db.session.add(new_post)
         db.session.commit()
 
-        post_id = db.session.query(Blog.id).filter(Blog.title==title_name).first() #fail 1
-        new_id = request.args.get(Blog.id) # fail 2 
+        post_id = str(new_post.id)
         
-        return redirect("blog") # after user submits new post, redirects to blog page
-
-    return render_template('newpost.html')
+        return redirect(f"/blog?id={post_id}") # after user submits new post, redirects to blog post
+    
+    # else, for get requests
+    return render_template('newpost.html', title = "Add a Blog Entry")
     
 def main():
     ENGINE = create_engine(connection_string)
