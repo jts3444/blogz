@@ -48,7 +48,7 @@ def b_display():
     
     # handles display for all posts
     blogs = Blog.query.filter_by().all()
-    return render_template('blog.html',title="New Blog Post", 
+    return render_template('blog.html', 
         blogs=blogs)
 
 @app.route('/newpost', methods=['POST', 'GET'])
@@ -60,21 +60,26 @@ def newpost():
         title_error = ''
         text_error = ''
         
+        # checks if there's no text entered in title or body
         if title_name == '':
             title_error = "Please enter a title"
         if body_text == '':
             text_error = "Please enter content for your blog post"
         
+        # if there's an error, renders the template with error messages
         if title_error or text_error:
             return render_template('newpost.html', title_error=title_error, text_error=text_error)
 
+        # with no errors, a new blog post is created and committed to the database
         new_post = Blog(title_name, body_text)
         db.session.add(new_post)
         db.session.commit()
 
+        # gets the new post's table id and assigns to variable
         post_id = str(new_post.id)
         
-        return redirect(f"/blog?id={post_id}") # after user submits new post, redirects to blog post
+        # after user submits new post, redirects to blog post
+        return redirect(f"/blog?id={post_id}") 
     
     # else, for get requests
     return render_template('newpost.html', title = "Add a Blog Entry")
