@@ -7,11 +7,11 @@ app.config["DEBUG"] = True  # set to True for Flask report on web server activit
 app.config["SQLALCHEMY_ECHO"] = False   # set True for MySQL report on database activity
 
 # put in your database credentials here
-username = "build-a-blog"
-password = "buildablog"
+username = "blogz"
+password = "blogz"
 host = "localhost"
 port = "8889"
-database = "build-a-blog"
+database = "blogz"
 
 connection_string = f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
 
@@ -26,11 +26,24 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(360))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, owner):
         self.title = title
         self.body = body
+        self.owner = owner
+
+class User(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True)
+    password = db.Column(db.String(120))
+    blogs = db.relationship('Blog', backref='owner')
+
+    def __init__(self, email, password):
+        self.email = email
+        self.password = password
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
@@ -56,6 +69,7 @@ def newpost():
     if request.method == 'POST':
         title_name = request.form['title']
         body_text = request.form['body']
+        owner = User.query.filter_by(email=session['email']).first()
 
         title_error = ''
         text_error = ''
@@ -71,7 +85,7 @@ def newpost():
             return render_template('newpost.html', title_error=title_error, text_error=text_error)
 
         # with no errors, a new blog post is created and committed to the database
-        new_post = Blog(title_name, body_text)
+        new_post = Blog(title_name, body_text, owner)
         db.session.add(new_post)
         db.session.commit()
 
