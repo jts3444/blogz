@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy # Python ORM
 from sqlalchemy import create_engine, inspect
 
@@ -20,6 +20,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app) # uses the SQLAlchemy Database URI (connection string) to connect to the db
 db_session = db.session # used for interaction with the database
+app.secret_key = 'y337kGcys&zP3B'
 
 class Blog(db.Model):
 
@@ -45,6 +46,26 @@ class User(db.Model):
         self.email = email
         self.password = password
 
+#does the checking for the password and userinfo
+#also works if userinfo is blank
+''' def valid_length(userinfo):
+    if len(userinfo) > 20 or len(userinfo) < 3:
+        return False
+    return True
+'''
+
+def valid_content(userinfo):
+    if len(userinfo) > 20 or len(userinfo) < 3:
+        return False
+    return True
+'''
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup']
+    if request.endpoint not in allowed_routes and 'email' not in session:
+        return redirect('/login')
+'''
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
     return redirect('/blog')
@@ -63,6 +84,45 @@ def b_display():
     blogs = Blog.query.filter_by().all()
     return render_template('blog.html', 
         blogs=blogs)
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        user = User.query.filter_by(email=email).first()
+        if user and user.password == password:
+            session['email'] = email
+            flash("Logged in")
+            return redirect('/newpost')
+        else:
+            flash('User password incorrect, or user does not exist', 'error')
+
+    return render_template('login.html')
+
+@app.route('/signup', methods=['POST', 'GET'])
+def signup():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        verify = request.form['verify']
+        existing_user = User.query.filter_by(email=email).first()
+
+        if not valid_content(email) or not valid_content(password):
+            flash("Invalid e-mail or password, must be between 3 and 20 characters")
+        if verify != password:
+            flash("Password and verification do not match")
+        if not existing_user:
+            new_user = User(email, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['email'] = email
+            return redirect('/newpost')
+        else:
+            flash("User already exists, please login")
+
+    return render_template('signup.html')
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def newpost():
@@ -97,7 +157,12 @@ def newpost():
     
     # else, for get requests
     return render_template('newpost.html', title = "Add a Blog Entry")
-    
+
+@app.route('/logout')
+def logout():
+    del session['email']
+    return redirect('/')
+
 def main():
     ENGINE = create_engine(connection_string)
     INSPECTOR = inspect(ENGINE)  # used for checking if tables exist on startup
