@@ -10,7 +10,7 @@
     </center>
     
         {% for user in users %}
-        <h2><strong><a href="/blog?user={{ user.id }}">{{user.email}}</a></strong></h2>
+        <h2><strong><a href="/blog?userid={{ user.id }}">{{user.email}}</a></strong></h2>
         {% endfor %}
     
     {% endif %}

@@ -60,7 +60,7 @@ def require_login():
         return redirect('/login')
 
 # home page, displays all the blog authors
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/')
 def index():
     users = User.query.all()
     return render_template('index.html', 
@@ -75,10 +75,12 @@ def b_display():
         post = Blog.query.get(blog_id)
         return render_template('blog_post.html', post = post)
 
-    user_id = request.args.get('email')
+    # handles display of blogs by user
+    user_id = request.args.get('userid')
     if (user_id):
-        user_blogs = Blog.query.filter_by(email = user_id).all()
-        return render_template('user.html', blogs = user_blogs)
+        blogs = Blog.query.filter_by(owner_id=user_id).all()
+        user = User.query.filter_by(id = user_id).first()
+        return render_template('user.html', user = user, blogs = blogs)
     
     # handles display for all posts
     blogs = Blog.query.filter_by().all()
