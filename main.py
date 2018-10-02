@@ -48,28 +48,23 @@ class User(db.Model):
 
 #does the checking for the password and userinfo
 #also works if userinfo is blank
-''' def valid_length(userinfo):
-    if len(userinfo) > 20 or len(userinfo) < 3:
-        return False
-    return True
-'''
-
 def valid_content(userinfo):
     if len(userinfo) > 20 or len(userinfo) < 3:
         return False
     return True
-'''
+
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup']
+    allowed_routes = ['login', 'signup', 'b_display', 'index']
     if request.endpoint not in allowed_routes and 'email' not in session:
         return redirect('/login')
-'''
 
+# home page, displays all the blog authors
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    return redirect('/blog')
-
+    users = User.query.all()
+    return render_template('index.html', 
+        users=users)
     
 @app.route('/blog')
 def b_display():
@@ -79,6 +74,11 @@ def b_display():
     if (blog_id):
         post = Blog.query.get(blog_id)
         return render_template('blog_post.html', post = post)
+
+    user_id = request.args.get('email')
+    if (user_id):
+        user_blogs = Blog.query.filter_by(email = user_id).all()
+        return render_template('user.html', blogs = user_blogs)
     
     # handles display for all posts
     blogs = Blog.query.filter_by().all()
@@ -110,17 +110,17 @@ def signup():
         existing_user = User.query.filter_by(email=email).first()
 
         if not valid_content(email) or not valid_content(password):
-            flash("Invalid e-mail or password, must be between 3 and 20 characters")
-        if verify != password:
-            flash("Password and verification do not match")
-        if not existing_user:
+            flash("Invalid e-mail or password, must be between 3 and 20 characters", 'error')
+        elif verify != password:
+            flash("Password and verification do not match", 'error')
+        elif valid_content(email) and valid_content(password) and verify == password and not existing_user:
             new_user = User(email, password)
             db.session.add(new_user)
             db.session.commit()
             session['email'] = email
             return redirect('/newpost')
         else:
-            flash("User already exists, please login")
+            flash("User already exists, please login", 'error')
 
     return render_template('signup.html')
 
@@ -130,30 +130,24 @@ def newpost():
         title_name = request.form['title']
         body_text = request.form['body']
         owner = User.query.filter_by(email=session['email']).first()
-
-        title_error = ''
-        text_error = ''
         
         # checks if there's no text entered in title or body
         if title_name == '':
-            title_error = "Please enter a title"
+            flash("Please enter a title", 'error')
         if body_text == '':
-            text_error = "Please enter content for your blog post"
-        
-        # if there's an error, renders the template with error messages
-        if title_error or text_error:
-            return render_template('newpost.html', title_error=title_error, text_error=text_error)
+            flash("Please enter content for your blog post", 'error')
 
         # with no errors, a new blog post is created and committed to the database
-        new_post = Blog(title_name, body_text, owner)
-        db.session.add(new_post)
-        db.session.commit()
+        if title_name != '' and body_text != '':
+            new_post = Blog(title_name, body_text, owner)
+            db.session.add(new_post)
+            db.session.commit()
 
         # gets the new post's table id and assigns to variable
-        post_id = str(new_post.id)
+            post_id = str(new_post.id)
         
         # after user submits new post, redirects to blog post
-        return redirect(f"/blog?id={post_id}") 
+            return redirect(f"/blog?id={post_id}") 
     
     # else, for get requests
     return render_template('newpost.html', title = "Add a Blog Entry")
@@ -161,6 +155,7 @@ def newpost():
 @app.route('/logout')
 def logout():
     del session['email']
+    flash("Logged Out")
     return redirect('/')
 
 def main():

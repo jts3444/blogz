@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <style>.error {
-    color: red;
-    }
-    </style>
     <center>
     <h1>{{title}}</h1>
     </center>
@@ -13,14 +9,12 @@
             Blog Title:
             <p></p>
             <input type="text" name='title' />
-            <span class="error">{{title_error}}</span> 
         </label>
         <br></br>
         <label>
             Blog Content:
             <br></br>
             <textarea rows ="8" cols = "50" name='body'></textarea>
-            <span class="error">{{text_error}}</span> 
         </label>
         <br></br>
         <input type="submit" value='Add Blog' />
