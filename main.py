@@ -53,6 +53,7 @@ def valid_content(userinfo):
         return False
     return True
 
+# ensures user can't post a blog w/o logging in, only allows listed pages to be pulled up
 @app.before_request
 def require_login():
     allowed_routes = ['login', 'signup', 'b_display', 'index']
@@ -94,6 +95,9 @@ def login():
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
+
+        # if there's a user and the password matches what's in the table, begins session and shows
+        # that the user is logged in, else an error displays
         if user and user.password == password:
             session['email'] = email
             flash("Logged in")
@@ -105,6 +109,8 @@ def login():
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
+    # if post method, gets data from form and conducts checks to see if the data is valid
+    # displays error messages if it's incorrect
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
